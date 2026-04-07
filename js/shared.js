@@ -61,7 +61,7 @@ function applyTheme(m) {
   document.body.classList.toggle('light-mode', m === 'light');
   if (themeBtn) themeBtn.textContent = m === 'light' ? '☀️' : '🌙';
   document.querySelectorAll('.logo-swap').forEach(img => {
-    img.src = m === 'light' ? 'Brand assets/Elyrac Ai-05.png' : 'Brand assets/Elyrac Ai-06 (1).png';
+    img.src = 'Brand assets/Elyrac Ai-03 (1).png';
   });
 }
 const savedTheme = localStorage.getItem('elyrac-theme') || 'dark';
@@ -336,10 +336,11 @@ const chatClose  = document.getElementById('chat-close');
 const chatMsgs   = document.getElementById('chat-messages');
 const chatInput  = document.getElementById('chat-input');
 const chatSend   = document.getElementById('chat-send');
-if (!chatBtn) throw new Error('no chatbot'); // stops rest of script if chatbot missing on page
-
-let chatOpen = false, dragging = false, hasMoved = false, dragOx = 0, dragOy = 0;
+if (chatBtn) {
+/* ---- all chatbot logic wrapped below ---- */
+let chatOpen = false, dragging = false, hasMoved = false, dragOx = 0, dragOy = 0, dragSx = 0, dragSy = 0;
 const MARGIN = 24;
+const DRAG_THRESHOLD = 7; // px — prevents tiny mouse tremor from cancelling a click
 
 function snapCorner() {
   const r = chatBtn.getBoundingClientRect();
@@ -352,8 +353,8 @@ function snapCorner() {
   setTimeout(() => chatBtn.style.transition='', 380);
 }
 
-const startDrag = (cx, cy) => { dragging=true; hasMoved=false; const r=chatBtn.getBoundingClientRect(); dragOx=cx-r.left; dragOy=cy-r.top; chatBtn.style.transition='none'; };
-const moveDrag  = (cx, cy) => { if(!dragging)return; hasMoved=true; chatBtn.style.right='auto';chatBtn.style.bottom='auto'; chatBtn.style.left=Math.max(0,Math.min(innerWidth-chatBtn.offsetWidth,cx-dragOx))+'px'; chatBtn.style.top=Math.max(0,Math.min(innerHeight-chatBtn.offsetHeight,cy-dragOy))+'px'; };
+const startDrag = (cx, cy) => { dragging=true; hasMoved=false; dragSx=cx; dragSy=cy; const r=chatBtn.getBoundingClientRect(); dragOx=cx-r.left; dragOy=cy-r.top; chatBtn.style.transition='none'; };
+const moveDrag  = (cx, cy) => { if(!dragging)return; if(Math.hypot(cx-dragSx,cy-dragSy) > DRAG_THRESHOLD) hasMoved=true; chatBtn.style.right='auto';chatBtn.style.bottom='auto'; chatBtn.style.left=Math.max(0,Math.min(innerWidth-chatBtn.offsetWidth,cx-dragOx))+'px'; chatBtn.style.top=Math.max(0,Math.min(innerHeight-chatBtn.offsetHeight,cy-dragOy))+'px'; };
 const endDrag   = () => { if(!dragging)return; dragging=false; snapCorner(); if(!hasMoved) toggleChat(); };
 
 chatBtn.addEventListener('mousedown',  e => startDrag(e.clientX, e.clientY));
@@ -427,9 +428,11 @@ async function sendMessage() {
 if (chatSend)  chatSend.addEventListener('click', sendMessage);
 if (chatInput) chatInput.addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 
-// Welcome message
+// Welcome message on first load
 setTimeout(() => {
   if (chatMsgs && !chatMsgs.children.length) {
-    addMsg("Hi! 👋 I'm here to answer any questions about elyrac AI's custom AI development services. How can I help?", 'bot');
+    addMsg("Hi there! 👋 I'm the elyrac AI assistant. Ask me anything about what we build, how we work, or <a href='https://calendly.com/ceo-elyracai/30min' target='_blank' rel='noopener'>book a free call directly</a>.", 'bot');
   }
 }, 700);
+
+} /* end if (chatBtn) */
